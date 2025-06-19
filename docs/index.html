@@ -22,6 +22,110 @@
   </head>
   <body>
     
+<style>
+  #custom-loading-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    font-family: Arial, sans-serif;
+  }
+
+  #loading-spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+
+  @keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  #loading-text {
+    font-size: 18px;
+    color: #333;
+  }
+</style>
+
+<div id="custom-loading-message">
+  <div id="loading-spinner"></div>
+  <div id="loading-text">Carregando...</div>
+  <div id="loading-text">Isso pode demorar um pouco</div>
+</div>
+
+<script>
+  // Função que verifica se o app Shiny já carregou
+  function checkForShinyApp() {
+    // Verifica elementos específicos do Shiny que indicam que o app foi carregado
+    const shinyElements = document.querySelectorAll(
+      ".shiny-output-binding, .shiny-input-binding, [data-shiny-output-id]"
+    );
+    const shinyConnected =
+      window.Shiny &&
+      window.Shiny.shinyapp &&
+      window.Shiny.shinyapp.$socket;
+
+    if (shinyElements.length > 0 || shinyConnected) {
+      const loadingDiv = document.getElementById("custom-loading-message");
+      if (loadingDiv) {
+        loadingDiv.style.display = "none";
+      }
+      return true;
+    }
+    return false;
+  }
+
+  // Verifica imediatamente se o DOM já está pronto
+  if (document.readyState !== "loading") {
+    if (!checkForShinyApp()) {
+      // Faz uma checagem a cada 500 ms
+      const checkInterval = setInterval(function () {
+        if (checkForShinyApp()) {
+          clearInterval(checkInterval);
+        }
+      }, 500);
+
+      // Plano B: oculta após 25 s independentemente
+      setTimeout(function () {
+        const loadingDiv = document.getElementById("custom-loading-message");
+        if (loadingDiv) {
+          loadingDiv.style.display = "none";
+        }
+        clearInterval(checkInterval);
+      }, 25000); // 25 segundos
+    }
+  } else {
+    document.addEventListener("DOMContentLoaded", function () {
+      const checkInterval = setInterval(function () {
+        if (checkForShinyApp()) {
+          clearInterval(checkInterval);
+        }
+      }, 500);
+
+      // Plano B: oculta após 25 s
+      setTimeout(function () {
+        const loadingDiv = document.getElementById("custom-loading-message");
+        if (loadingDiv) {
+          loadingDiv.style.display = "none";
+        }
+        clearInterval(checkInterval);
+      }, 25000); // 25 segundos
+    });
+  }
+</script>
+
     <div style="height: 100vh; width: 100vw" id="root"></div>
     
   </body>
